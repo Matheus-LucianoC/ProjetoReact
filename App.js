@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import {
   View,
   Text,
@@ -52,11 +52,18 @@ function LoginScreen({ navigation }) {
 }
 
 function ListaScreen({ navigation }) {
-  const contatos = [
-    { id: '1', nome: 'Marcos Andrade', email: "Marquinhos@hot.email", telefone: '81 988553424' },
-    { id: '2', nome: 'Patrícia Tavares', email: "Patricia@email.com", telefone: '81 998765332' },
-    { id: '3', nome: 'Rodrigo Antunes', email: "Rodr4312341@email.com", telefone: '81 987765525' },
-  ];
+
+  const [contatos, setContatos] = useState([]);
+  
+  useEffect(() => {
+  fetch('http://localhost:3000/contatos') 
+    .then(response => response.json())
+    .then(data => {
+      console.log("DADOS:", data);
+      setContatos(data);
+    })
+    .catch(error => console.log("ERRO:", error));
+}, []);
 
   return (
     <View style={styles.container}>
@@ -64,7 +71,7 @@ function ListaScreen({ navigation }) {
 
       <FlatList
         data={contatos}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
@@ -110,16 +117,31 @@ function CadastroUsuarioScreen() {
 }
 
 function CadastroContatoScreen() {
+
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
+
+  const salvarContato = () => {
+    fetch('http://localhost:3000/contatos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, telefone })
+    })
+    .then(() => alert('Salvo!'))
+    .catch(err => console.log(err));
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>CADASTRO DE CONTATO</Text>
+      <Text>Cadastro</Text>
 
-      <TextInput placeholder="Nome" style={styles.input} />
-      <TextInput placeholder="Email" style={styles.input} />
-      <TextInput placeholder="Telefone" style={styles.input} />
+      <TextInput placeholder="Nome" onChangeText={setNome} />
+      <TextInput placeholder="Email" onChangeText={setEmail} />
+      <TextInput placeholder="Telefone" onChangeText={setTelefone} />
 
-      <TouchableOpacity style={styles.primaryButton}>
-        <Text style={styles.buttonText}>Salvar</Text>
+      <TouchableOpacity onPress={salvarContato}>
+        <Text>Salvar</Text>
       </TouchableOpacity>
     </View>
   );
